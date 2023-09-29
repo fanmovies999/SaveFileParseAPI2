@@ -1,0 +1,11 @@
+
+version: '3.4'
+
+services:
+  savefileparseapi2:
+    image: savefileparseapi2
+    build:
+      context: .
+      dockerfile: SaveFileParseAPI2/Dockerfile
+    ports:
+      - 80:80

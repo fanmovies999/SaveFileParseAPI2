@@ -36,6 +36,66 @@
                 "${workspaceFolder}/SaveFileParseAPI2.sln"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "type": "docker-build",
+            "label": "docker-build: debug",
+            "dependsOn": [
+                "build"
+            ],
+            "dockerBuild": {
+                "tag": "savefileparseapi2:dev",
+                "target": "base",
+                "dockerfile": "${workspaceFolder}/SaveFileParseAPI2/Dockerfile",
+                "context": "${workspaceFolder}",
+                "pull": true
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/SaveFileParseAPI2/SaveFileParseAPI2.csproj"
+            }
+        },
+        {
+            "type": "docker-build",
+            "label": "docker-build: release",
+            "dependsOn": [
+                "build"
+            ],
+            "dockerBuild": {
+                "tag": "savefileparseapi2:latest",
+                "dockerfile": "${workspaceFolder}/SaveFileParseAPI2/Dockerfile",
+                "context": "${workspaceFolder}",
+                "platform": {
+                    "os": "linux",
+                    "architecture": "amd64"
+                },
+                "pull": true
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/SaveFileParseAPI2/SaveFileParseAPI2.csproj"
+            }
+        },
+        {
+            "type": "docker-run",
+            "label": "docker-run: debug",
+            "dependsOn": [
+                "docker-build: debug"
+            ],
+            "dockerRun": {},
+            "netCore": {
+                "appProject": "${workspaceFolder}/SaveFileParseAPI2/SaveFileParseAPI2.csproj",
+                "enableDebugging": true
+            }
+        },
+        {
+            "type": "docker-run",
+            "label": "docker-run: release",
+            "dependsOn": [
+                "docker-build: release"
+            ],
+            "dockerRun": {},
+            "netCore": {
+                "appProject": "${workspaceFolder}/SaveFileParseAPI2/SaveFileParseAPI2.csproj"
+            }
         }
     ]
 }

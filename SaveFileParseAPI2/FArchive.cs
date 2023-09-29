@@ -65,7 +65,7 @@ public class ParserException : Exception
     { }
 }
 
-public abstract class FArchive : Stream, ICloneable
+public abstract class FArchive : Stream, ICloneable, IDisposable
 {
     public const uint PACKAGE_FILE_TAG = 0x9E2A83C1U;
     public const uint PACKAGE_FILE_TAG_SWAPPED = 0xC1832A9EU;
