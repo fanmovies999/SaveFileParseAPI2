@@ -7,10 +7,10 @@ name: Docker Image CI linux
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master" , "main" ]
     tags: ["v*.*.*"]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
 
 env:
   # Use docker.io for Docker Hub if empty
