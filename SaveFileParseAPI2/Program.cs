@@ -10,12 +10,27 @@ var count = 0;
 app.MapGet("/", () => "Hello World!");
 
 
-app.MapPost("/getRawDatabaseImage", async (IFormFile file) => {
+app.MapPost("/getRawDatabaseImage", async (IFormFile file) =>
+{
+    var res = Results.Ok();
+
+    res = getRawDatabaseImage(file);
+
+    // Manage GC
+    System.Runtime.GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+    System.GC.Collect();
+
+    return res;
+});
+
+
+IResult getRawDatabaseImage(IFormFile file)
+{ 
     count++;
     var res = Results.Ok();
     
     var memoryStream = new MemoryStream();
-    await file.CopyToAsync(memoryStream);
+    /*await*/ file.CopyToAsync(memoryStream);
     memoryStream.Position = 0;
 
     // check file size
@@ -119,10 +134,6 @@ app.MapPost("/getRawDatabaseImage", async (IFormFile file) => {
     memoryStream.Dispose();
     memoryStream = null;
 
-    // Manage GC
-    System.Runtime.GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-    System.GC.Collect();
-
     // stop app after X call
     int stopCount = 0;
     if (!int.TryParse(Environment.GetEnvironmentVariable("STOPCOUNT"), out stopCount))
@@ -133,12 +144,12 @@ app.MapPost("/getRawDatabaseImage", async (IFormFile file) => {
     {
         if (count > stopCount)
         {
-            await app.StopAsync(TimeSpan.FromSeconds(1));
+            /*await*/ app.StopAsync(TimeSpan.FromSeconds(1));
         }
     }
 
     return res;
-});
+}
 
 app.Run();
 
