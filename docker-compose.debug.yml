@@ -4,14 +4,16 @@ version: '3.4'
 services:
   savefileparseapi2:
     image: savefileparseapi2
+    restart: unless-stopped
     build:
       context: .
       dockerfile: SaveFileParseAPI2/Dockerfile
       args:
         - configuration=Debug
     ports:
-      - 80:80
+      - 5000:5000
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development        
+      - ASPNETCORE_ENVIRONMENT=Development
+      - STOPCOUNT=100
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
