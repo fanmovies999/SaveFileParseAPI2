@@ -2,7 +2,9 @@ export SERVER ?= localhost
 export PORT ?= 5000
 
 test:
-	curl --location 'http://${SERVER}:${PORT}/getRawDatabaseImage' --form "file=@"../savegame/HL-01-00.sav"" --output output/HL-01-00.rdi.sqlite
+	mkdir -p output
+	curl --location 'http://${SERVER}:${PORT}/getRawDatabaseImage'  --form "file=@"../savegame/HL-01-00.sav"" --output output/HL-01-00.rdi.sqlite
+	curl --location 'http://${SERVER}:${PORT}/getRawExclusiveImage' --form "file=@"../savegame/HL-01-00.sav"" --output output/HL-01-00.rei.sqlite
 
 test_loop:
 	bash -c '[ ! -d output ] && mkdir output; \

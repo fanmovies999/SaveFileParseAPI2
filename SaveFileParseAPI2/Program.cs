@@ -14,7 +14,7 @@ app.MapPost("/getRawDatabaseImage", async (IFormFile file) =>
 {
     var res = Results.Ok();
 
-    res = getRawDatabaseImage(file);
+    res = getImage(file, "RawDatabaseImage");
 
     // Manage GC
     System.Runtime.GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
@@ -24,13 +24,28 @@ app.MapPost("/getRawDatabaseImage", async (IFormFile file) =>
 });
 
 
-IResult getRawDatabaseImage(IFormFile file)
+app.MapPost("/getRawExclusiveImage", async (IFormFile file) =>
+{
+    var res = Results.Ok();
+
+    res = getImage(file, "RawExclusiveImage");
+
+    // Manage GC
+    System.Runtime.GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+    System.GC.Collect();
+
+    return res;
+});
+
+
+IResult getImage(IFormFile file, String imageName)
 { 
     count++;
     var res = Results.Ok();
     
     var memoryStream = new MemoryStream();
-    /*await*/ file.CopyToAsync(memoryStream);
+    /*await file.CopyToAsync(memoryStream); */
+    file.CopyTo(memoryStream);
     memoryStream.Position = 0;
 
     // check file size
@@ -49,23 +64,23 @@ IResult getRawDatabaseImage(IFormFile file)
         }
         else
         {
-            // Check if file contains RawDatabaseImage
+            // Check if file contains imageName
             long pos = memoryStream.Position;
             int rdi = -1;
             using (var streamReader = new StreamReader(memoryStream, Encoding.ASCII, leaveOpen: true))
             {
                 string contents = streamReader.ReadToEnd();
-                rdi = contents.IndexOf("RawDatabaseImage");
+                rdi = contents.IndexOf(imageName);
 
                 if (rdi == -1) {
-                    return Results.UnprocessableEntity("No RawDatabaseImage in file.");
+                    return Results.UnprocessableEntity("No "+imageName+" in file.");
                 }
             }
             memoryStream.Position = pos; // go back to initial location.
 
             // Move to the beginning of the Image
             memoryStream.Position += rdi;
-            memoryStream.Position += 17; // Word RawDatabaseImage;
+            memoryStream.Position += imageName.Length + 1; // Word imageName;
             memoryStream.Position += 4;  // length of ArrayProperty
             memoryStream.Position += 14; // Word ArrayProperty
             memoryStream.Position += 8;  // int64 arraysize  790334=000C0F3E
@@ -90,7 +105,7 @@ IResult getRawDatabaseImage(IFormFile file)
                 var tag = Encoding.ASCII.GetString(image, 0, 4);
                 if (tag == "SQLi")
                 {
-                    res = Results.Bytes(image, "application/octet-stream", "RawDatabaseImage");
+                    res = Results.Bytes(image, "application/octet-stream", imageName);
                 }
                 else
                 {
@@ -102,7 +117,7 @@ IResult getRawDatabaseImage(IFormFile file)
                     else
                     {
                         // Decompress the archive
-                        var Ar = new FArchiveLoadCompressedProxy("RawDatabaseImage", image, "Oodle");
+                        var Ar = new FArchiveLoadCompressedProxy(imageName, image, "Oodle");
                         var uncompressedImage = Ar.ReadArray<byte>();
                         Ar.Dispose();
                         Ar = null;
@@ -119,7 +134,7 @@ IResult getRawDatabaseImage(IFormFile file)
                         }
                         else
                         {                            
-                            res = Results.Bytes(uncompressedImage, "application/octet-stream", "RawDatabaseImage");
+                            res = Results.Bytes(uncompressedImage, "application/octet-stream", imageName);
                         }
                         uncompressedImage = null;
                     } // if (BitConverter.ToUInt64(image[0..8]) != PACKAGE_FILE_TAG)
